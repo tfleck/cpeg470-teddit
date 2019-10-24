@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  //Rules
+  match /databases/{database}/documents {
+  	//Helper functions
+    //If auth property is set, user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    //return roles for current user
+    function getRoles() {
+      return get(/databases/$(database)/documents/roles/$(request.auth.uid)).data
+    }
+    //check if current user has a role
+    function hasRole(role) {
+      return isSignedIn() && getRoles()[role] == true;
+    }
+    //check if current user has any of the list of given roles
+    function hasAnyRole(roles) {
+      return isSignedIn() && getRoles().keys().hasAny(roles);
+    }
+  	
+    //Manage users
+    match /users/{user} {
+    	//anyone can get a user's profile information
+    	allow get: if true;
+      //no one can query all users or make users
+      allow list,create: if false;
+      //users can modify themselves
+      allow update,delete: if request.auth.uid == user;
+    }
+  
+  	// Manage roles
+  	match /roles/{user} {
+    	allow get: if request.auth.uid == user || hasRole('admin');
+      allow list: if hasRole('admin');
+      allow update: if hasRole('admin');
+      allow create, delete: if false;
+    }
+    
+  	//Manage threads
+    match /threads/{thread} {
+    	allow get, list: if true;
+      allow create: if hasRole('writer');
+      allow update,delete: if (hasRole('writer') && resource.data.author == request.auth.uid) || hasRole('editor');
+      
+      //Manage posts
+      match /posts/{post} {
+      	allow get, list: if true;
+        allow create: if hasRole('writer');
+        allow update,delete: if (hasRole('writer') && resource.data.author == request.auth.uid) || hasRole('editor') || hasRole(thread+'-editor');
+        
+        //Manage all subcollections of comments
+        match /comments/{comment}/{document=**} {
+        	allow get, list: if true;
+          allow create: if hasRole('user');
+          allow update: if resource.data.author == request.auth.uid;
+          allow delete: if hasRole('editor') || hasRole(thread+'-editor') || (hasRole('user') && resource.data.author == request.auth.uid);
+        }
+      }  
+    }
+  }
+}
