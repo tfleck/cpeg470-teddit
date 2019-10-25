@@ -1,0 +1,57 @@
+/* Elements */
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-size: 16px;
+}
+
+@media screen and (max-width: 992px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+main {
+  width: 98%;
+  flex: 1 0 auto;
+}
+
+@media only screen and (max-width: 768px) {
+  main {
+    width: 100%;
+  }
+}
+
+footer {
+  color: #fff;
+  background-color: #343a40;
+  flex-shrink: 0;
+  margin-top: 75px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+footer p {
+  text-align: center;
+  margin-bottom: 0px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Classes */
+.navbar-brand {
+  font-size: 2rem;
+}
+
+.card-title {
+  margin-bottom: 0rem;
+}
+
+.card-body {
+  padding: 1rem 1.25rem;
+}
+
+.card-footer {
+  padding: 0.3rem 1.25rem;
+}
