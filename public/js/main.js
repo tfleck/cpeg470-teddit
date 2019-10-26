@@ -10,24 +10,61 @@ var firebaseConfig = {
   measurementId: "G-HRXWVK410N"
 };
 
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var google_provider = new firebase.auth.GoogleAuthProvider();
+
 //get URL parameters
-const pathnameSplit = window.location.pathname.split('/');
-const pathSegments = pathnameSplit.filter(function(value, index, arr){
+var pathnameSplit = window.location.pathname.split('/');
+var pathSegments = pathnameSplit.filter(function(value, index, arr){
   return value !== '';
 });
 
 $(document).ready(function(){
+  //Render page content based on URL
+  renderPage(pathSegments);
   
-  console.log(pathnameSplit);
-  console.log(pathSegments);
+  //listen for back button, and prevent browser default to handle event
+  window.addEventListener('popstate', function(event){
+    pathSegments = event.state.pathArray;
+    renderPage(pathSegments);
+  });
+
+  //disable browser defaults for enter key to use for search submit instead
+  $(document).on("keydown", "#searchBox", function(event) {
+    if (event.key == "Enter") {
+      event.preventDefault();
+      console.log("enter");
+    }
+  });
+
+  //prevent browser reload on spa-link click
+  //add page to browser history to make forward/back work
+  //load new content based on new url
+  $(document).on("click", ".spa-link", function(event) {
+    event.preventDefault();
+    let newPath = event.target.getAttribute('href');
+    let newSplit = newPath.replace(event.target.getAttribute('origin'),'').split('/');
+    let newSegments = newSplit.filter(function(value,index,arr){
+      return value !== '';
+    })
+    pathSegments = newSegments;
+    history.pushState({pathArray: pathSegments}, "Page Title", newPath);
+    renderPage(pathSegments);
+  });
   
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  firebase.analytics();
-
-  var db = firebase.firestore();
-  var google_provider = new firebase.auth.GoogleAuthProvider();
-
+  //redirect to google oauth on login/logout click
+  $('#loginBtn').click(function(){
+    if($('#loginBtn').html() === "Log In"){
+      firebase.auth().signInWithRedirect(google_provider);
+    }
+    else{
+      firebase.auth().signOut();
+    }
+  });
+  
+  //handle user login/logout
   firebase.auth().onAuthStateChanged(function(user) {
     window.user = user;
     if(window.user === null){
@@ -40,43 +77,20 @@ $(document).ready(function(){
       $('#loginBtn').removeClass('btn-success');
       $('#loginBtn').addClass('btn-outline-success');
     }
-    console.log(user);
   });
-  
-  if(pathSegments[0] === 't'){
-    db.collection("threads").doc(pathSegments[1]).collection("posts").get().then((querySnapshot) => {
-    $('#mainContainer').html('');
-    querySnapshot.forEach(function(doc) {
-      // doc.data() is never undefined for query doc snapshots
-      //console.log(doc.id, " => ", doc.data());
-      addPost(doc.data());
-    });
-  });
-  }
-  
-  
-  //disable browser defaults for enter key to not screw with search box submit
-  $(document).on("keydown", ":input", function(event) {
-    if (event.key == "Enter") {
-      event.preventDefault();
-    }
-  });
-
-  $('#loginBtn').click(function(){
-    if($('#loginBtn').html() === "Log In"){
-      firebase.auth().signInWithRedirect(google_provider);
-    }
-    else{
-      firebase.auth().signOut();
-    }
-  });
-
-  $('#searchBox').on('keyup', function(e){
-    if(e.key === "Enter"){
-      console.log("enter");
-    }
-  })
 });
+
+function renderPage(pathArray){
+  if(pathArray[0] === 't'){
+    db.collection("threads").doc(pathArray[1]).collection("posts").get().then((querySnapshot) => {
+      $('#mainContainer').html('');
+      querySnapshot.forEach(function(doc) {
+        // doc.data() is never undefined for query doc snapshots
+        addPost(doc.data());
+      });
+    });
+  }
+}
 
 function addPost(data){
   //turn elapsed seconds into whole number of appropriate unit
@@ -96,23 +110,23 @@ function addPost(data){
     elapsedString = elapsedString.substr(0,elapsedString.length-1);
   }
   $('#mainContainer').append(`
-    <br>
-    <div class="container-fluid">
-    <div class="row justify-content-center">
-          <div class="col-10 col-md-8">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="card-title">${data.title}</h5>
-              </div>
-              <div class="card-body">
-                <p class="card-text">${data.body}</p>
-              </div>
-              <div class="card-footer">
-                <small class="text-muted">${data.authorDisplay} last updated ${elapsedTime} ${elapsedString} ago</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-  `)
+<br>
+<div class="container-fluid">
+<div class="row justify-content-center">
+<div class="col-10 col-md-8">
+<div class="card">
+<div class="card-header">
+<h5 class="card-title">${data.title}</h5>
+</div>
+<div class="card-body">
+<p class="card-text">${data.body}</p>
+</div>
+<div class="card-footer">
+<small class="text-muted">${data.authorDisplay} last updated ${elapsedTime} ${elapsedString} ago</small>
+</div>
+</div>
+</div>
+</div>
+</div>
+`)
 }
