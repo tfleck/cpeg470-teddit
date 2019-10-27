@@ -88,6 +88,7 @@ $(document).ready(function () {
     let postContent = $('#newPostContent').val();
     if (pathSegments[0] === 't') { //url sanity check
       db.collection('threads').doc(pathSegments[1]).collection('posts').add({
+          //all fields sanitized by server-side function
           authorDisplay: window.user.displayName,
           body: postContent,
           title: postTitle,
@@ -99,8 +100,6 @@ $(document).ready(function () {
           //match for any logged in operation so that the uid can't be modified
           //to impersonate other users.
         }).then(function () {
-          //add post to client, it will show up on other clients 
-          //once cloud function fires and adds a timestamp
           showAlert('#newPostAlertPlaceholder', 'Post successful', 'alert-success');
           //wait a brief period for user to see success message before dismissing
           window.setTimeout(function () {
@@ -110,13 +109,6 @@ $(document).ready(function () {
             $('#newPostTitle').val('');
             $('#newPostContent').val('');
           }, 750);
-          //render new post to thread right away to avoid function delay
-          renderPost({
-            authorDisplay: window.user.displayName,
-            body: postContent,
-            title: postTitle,
-          });
-
         })
         .catch(function (error) {
           showAlert('#newPostAlertPlaceholder', 'Post failed, please try again', 'alert-danger');

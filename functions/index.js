@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const xss = require('xss');
 
 admin.initializeApp(functions.config().firebase);
 
@@ -35,8 +36,12 @@ exports.createPost = functions.firestore.document('threads/{thread}/posts/{post}
   let timestamp = admin.firestore.Timestamp.now();
   // Get an object representing the document
   // e.g. {'name': 'Marie', 'age': 66}
+  let newData = snap.data();
   return snap.ref.set({
+    authorDisplay: xss(newData.authorDisplay),
+    body: xss(newData.body),
     time: timestamp,
+    title: xss(newData.title),
     upvotes: 1
   }, {
     merge: true
