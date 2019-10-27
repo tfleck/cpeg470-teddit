@@ -145,7 +145,7 @@ $(document).ready(function () {
 //load page content for a particular URL
 function renderPage(pathArray) {
   if (pathArray[0] === 't') {
-    db.collection('threads').doc(pathArray[1]).collection('posts').orderBy('time', 'asc').limit(20).onSnapshot((querySnapshot) => {
+    db.collection('threads').doc(pathArray[1]).collection('posts').orderBy('time', 'desc').limit(20).onSnapshot((querySnapshot) => {
       $('#postsContainer').html('');
       querySnapshot.forEach(function (doc) {
         //make sure rendering continues if a post fails for any reason
@@ -182,7 +182,7 @@ function renderPost(data) {
     }
   }
 
-  $('#postsContainer').html(`
+  $('#postsContainer').html($('#postsContainer').html() + `
   <br>
   <div class="container-fluid">
     <div class="row justify-content-center">
@@ -201,7 +201,7 @@ function renderPost(data) {
       </div>
     </div>
   </div>
-  ` + $('#postsContainer').html());
+  `);
 }
 
 function showAlert(selector, message, alertClass) {
