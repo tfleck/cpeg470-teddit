@@ -5,7 +5,7 @@ service cloud.firestore {
   	//Helper functions
     //If auth property is set, user is signed in
     function isSignedIn() {
-      return request.auth != null;
+      return (request.auth != null) && request.auth.uid == request.resource.data.uid;
     }
     //return roles for current user
     function getRoles() {
@@ -22,8 +22,8 @@ service cloud.firestore {
   	
     //Manage users
     match /users/{user} {
-    	//anyone can get a user's profile information
-    	allow get: if true;
+      //anyone can get a user's profile information
+      allow get: if true;
       //no one can query all users or make users
       allow list,create: if false;
       //users can modify themselves
@@ -32,7 +32,7 @@ service cloud.firestore {
   
   	// Manage roles
   	match /roles/{user} {
-    	allow get: if request.auth.uid == user || hasRole('admin');
+      allow get: if request.auth.uid == user || hasRole('admin');
       allow list: if hasRole('admin');
       allow update: if hasRole('admin');
       allow create, delete: if false;
@@ -40,7 +40,7 @@ service cloud.firestore {
     
   	//Manage threads
     match /threads/{thread} {
-    	allow get, list: if true;
+      allow get, list: if true;
       allow create: if hasRole('writer');
       allow update,delete: if (hasRole('writer') && resource.data.author == request.auth.uid) || hasRole('editor');
       
@@ -52,7 +52,7 @@ service cloud.firestore {
         
         //Manage all subcollections of comments
         match /comments/{comment}/{document=**} {
-        	allow get, list: if true;
+          allow get, list: if true;
           allow create: if hasRole('user');
           allow update: if resource.data.author == request.auth.uid;
           allow delete: if hasRole('editor') || hasRole(thread+'-editor') || (hasRole('user') && resource.data.author == request.auth.uid);

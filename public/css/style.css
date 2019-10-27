@@ -1,9 +1,10 @@
+/* Rules grouped by category, and then order in html file */
 /* Elements */
 body {
   display: flex;
   flex-direction: column;
-  height: 100vh;
   font-size: 16px;
+  height: 100vh;
 }
 
 @media screen and (max-width: 992px) {
@@ -13,8 +14,8 @@ body {
 }
 
 main {
-  width: 98%;
   flex: 1 0 auto;
+  width: 98%;
 }
 
 @media only screen and (max-width: 768px) {
@@ -24,19 +25,19 @@ main {
 }
 
 footer {
-  color: #fff;
   background-color: #343a40;
+  color: #fff;
   flex-shrink: 0;
   margin-top: 75px;
-  padding-top: 15px;
   padding-bottom: 15px;
+  padding-top: 15px;
 }
 
 footer p {
-  text-align: center;
-  margin-bottom: 0px;
-  padding-top: 10px;
+  margin-bottom: 0;
   padding-bottom: 10px;
+  padding-top: 10px;
+  text-align: center;
 }
 
 /* Classes */
@@ -44,8 +45,12 @@ footer p {
   font-size: 2rem;
 }
 
+.card-header {
+  background-color: #E8E8E8;
+}
+
 .card-title {
-  margin-bottom: 0rem;
+  margin-bottom: 0;
 }
 
 .card-body {
@@ -53,5 +58,6 @@ footer p {
 }
 
 .card-footer {
+  background-color: #D8D8D8;
   padding: 0.3rem 1.25rem;
 }
