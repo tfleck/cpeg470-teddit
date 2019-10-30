@@ -49,6 +49,14 @@ footer p {
   background-color: #E8E8E8;
 }
 
+.card-header a {
+  color: #0056b3;
+}
+
+.card-header a:hover {
+  color: #0056b3;
+}
+
 .card-title {
   margin-bottom: 0;
 }
