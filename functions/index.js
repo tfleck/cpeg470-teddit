@@ -41,9 +41,34 @@ exports.createPost = functions.firestore.document('threads/{thread}/posts/{post}
     authorDisplay: xss(newData.authorDisplay),
     body: xss(newData.body),
     time: timestamp,
-    title: xss(newData.title),
+    title: encodeURI(xss(newData.titleDisplay)),
+    titleDisplay: xss(newData.titleDisplay),
     upvotes: 1
   }, {
     merge: true
   });
+});
+
+exports.createThread = functions.firestore.document('threads/{thread}').onCreate((snap, context) => {
+  let timestamp = admin.firestore.Timestamp.now();
+  // Get an object representing the document
+  // e.g. {'name': 'Marie', 'age': 66}
+  let newData = snap.data();
+  return snap.ref.set({
+    authorDisplay: xss(newData.authorDisplay),
+    body: xss(newData.body),
+    time: timestamp,
+    title: encodeURI(xss(newData.titleDisplay)),
+    titleDisplay: xss(newData.titleDisplay)
+  }, {
+    merge: true
+  });
+});
+
+exports.changeUpvotes = functions.firestore.document('threads/{thread}/posts/{post}/upvoters/{upvote}').onWrite((snap, context) => {
+  let newData = snap.data();
+  let vote = newData.vote;
+  db.collection('threads').doc(context.params.thread).collection('posts').doc(context.params.post).update({
+    upvotes: firebase.firestore.FieldValue.increment(vote)
+  });  
 });

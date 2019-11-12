@@ -57,6 +57,14 @@ service cloud.firestore {
           allow update: if resource.data.author == request.auth.uid;
           allow delete: if hasRole('editor') || hasRole(thread+'-editor') || (hasRole('user') && resource.data.author == request.auth.uid);
         }
+        
+        //Manage subcollection of upvotes
+        match /upvoters/{upvote} {
+          allow get, list: if true;
+          allow create: if hasRole('user');
+          allow update: if resource.data.author == request.auth.uid;
+          allow delete: if hasRole('editor') || hasRole(thread+'-editor') || (hasRole('user') && resource.data.author == request.auth.uid);
+        }
       }  
     }
   }
