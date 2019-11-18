@@ -209,20 +209,21 @@ function renderPage(pathArray) {
     db.collection('threads').where('title', '==', pathArray[1])
       .get()
       .then(function(querySnapshot) {
-      if(querySnapshot.size === 1){    db.collection('threads').doc(querySnapshot.docs[0].id).collection('posts').orderBy('time', 'desc').limit(20).onSnapshot((querySnapshot) => {
-        $('#postsContainer').html('');
-        querySnapshot.forEach(function (doc) {
-          //make sure rendering continues if a post fails for any reason
-          try {
-            console.log(doc.id);
-            renderPost(doc.data());
-          } catch (err) {
-            console.error('Post failed to render');
-            console.error(err);
-          }
+      if(querySnapshot.size === 1){
+        db.collection('threads').doc(querySnapshot.docs[0].id).collection('posts').orderBy('time', 'desc').limit(20).onSnapshot((querySnapshot) => {
+          $('#postsContainer').html('');
+          querySnapshot.forEach(function (doc) {
+            //make sure rendering continues if a post fails for any reason
+            try {
+              console.log(doc.id);
+              renderPost(doc.data());
+            } catch (err) {
+              console.error('Post failed to render');
+              console.error(err);
+            }
+          });
         });
-      });
-                                  }
+      }
     }).catch(function(error) {
       console.error('Error getting documents: ', error);
     });
@@ -312,7 +313,7 @@ function renderPost(data) {
 <p class="card-text">${data.body}</p>
 </div>
 <div class="card-footer">
-<small class="text-muted"><img class="arrow-upvote" src="/assets/arrow-up.svg" width="15" height="15">&nbsp;<img class="arrow-downvote" src="/assets/arrow-down.svg" width="15" height="15">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${data.authorDisplay} last updated ${elapsedTime} ${elapsedString} ago</small>
+<small class="text-muted"><img class="arrow-upvote" src="/assets/arrow-up.svg" width="15" height="15">&nbsp;${data.upvotes}&nbsp;<img class="arrow-downvote" src="/assets/arrow-down.svg" width="15" height="15">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${data.authorDisplay} last updated ${elapsedTime} ${elapsedString} ago</small>
 </div>
 </div>
 </div>
@@ -338,14 +339,14 @@ function votePost(post, myvote){
         .get()
         .then(function(querySnapshot2) {
         if(querySnapshot2.size === 1){
-           db.collection('threads').doc(querySnapshot.docs[0].id).collection('posts').doc(querySnapshot2.docs[0].id).collection('upvoters').doc(window.user.uid).set({
-             vote: myvote,
-             uid: window.user.uid
-           }).then(function(){
-             console.log("success");
-           }).catch(function(error){
-             console.error('Error upvoting: ', error);
-           })
+          db.collection('threads').doc(querySnapshot.docs[0].id).collection('posts').doc(querySnapshot2.docs[0].id).collection('upvoters').doc(window.user.uid).set({
+            vote: myvote,
+            uid: window.user.uid
+          }).then(function(){
+            console.log("success");
+          }).catch(function(error){
+            console.error('Error upvoting: ', error);
+          })
         }
 
       }).catch(function(error) {
