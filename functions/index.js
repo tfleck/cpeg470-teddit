@@ -66,9 +66,17 @@ exports.createThread = functions.firestore.document('threads/{thread}').onCreate
 });
 
 exports.changeUpvotes = functions.firestore.document('threads/{thread}/posts/{post}/upvoters/{upvote}').onWrite((snap, context) => {
-  let newData = snap.data();
-  let vote = newData.vote;
-  db.collection('threads').doc(context.params.thread).collection('posts').doc(context.params.post).update({
-    upvotes: firebase.firestore.FieldValue.increment(vote)
-  });  
+  let oldData = snap.before.data();
+  let oldVote = oldData.vote;
+  let newData = snap.after.data();
+  let newVote = xss(newData.vote);
+  console.log(oldVote)
+  console.log(newVote);
+  console.log(snap.after.ref.parent.parent.get('title'));
+  if( newVote === 1 || newVote === 0 || newVote === -1){
+    console.log(context.params.post);
+    db.collection('threads').doc(context.params.thread).collection('posts').doc(context.params.post).update({
+      upvotes: firebase.firestore.FieldValue.increment(newVote)
+    }); 
+  }
 });
